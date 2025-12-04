@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BARS Performance Appraisal - Teleperformance India</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",Tahoma, Geneva, Verdana, sans-serif;background:#f3f4f6;padding:20px;color:#374151}
+  .container{max-width:920px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 18px rgba(10,20,40,.06)}
+  .header{border-bottom:4px solid #2563eb;padding-bottom:18px;margin-bottom:20px}
+  .header h1{color:#1f2937;font-size:26px}
+  .header h2{color:#2563eb;font-size:18px;margin-top:6px}
+  .header p{color:#6b7280;font-size:13px;margin-top:6px}
+
+  .form-group{margin-bottom:14px}
+  .form-group label{display:block;font-weight:600;margin-bottom:6px}
+  .form-group input,.form-group textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:6px;font-size:14px}
+  .form-group input:focus,.form-group textarea:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+
+  /* page + transition */
+  .page { display:none; opacity:0; transform:translateY(6px); transition:opacity .36s ease, transform .36s ease; }
+  .page.active{ display:block; opacity:1; transform:none; }
+
+  .dimension-card{ border:2px solid #e5e7eb;border-radius:8px;padding:18px;background:#fff;margin-bottom:14px }
+  .dimension-header h3{font-size:18px;color:#1f2937;margin-bottom:6px}
+  .dimension-header p{color:#6b7280;font-style:italic;margin-bottom:8px}
+
+  .rating-option{display:flex;align-items:flex-start;padding:12px;border:2px solid #e5e7eb;border-radius:8px;margin-bottom:10px;cursor:pointer;transition:all .18s}
+  .rating-option:hover{border-color:#93c5fd;background:#f9fafb}
+  .rating-option.selected{border-color:#2563eb;background:#eff6ff}
+  .rating-option input{margin-right:14px;margin-top:4px;width:18px;height:18px}
+  .rating-content{flex:1}
+  .rating-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .rating-score{font-weight:700;color:#2563eb;font-size:18px}
+  .rating-label{font-size:12px;font-weight:700;padding:4px 10px;border-radius:12px}
+  .label-outstanding{background:#d1fae5;color:#065f46}
+  .label-exceeds{background:#dbeafe;color:#1e40af}
+  .label-meets{background:#fef3c7;color:#92400e}
+  .label-needs{background:#fed7aa;color:#9a3412}
+  .label-unsatisfactory{background:#fee2e2;color:#991b1b}
+  .rating-description{font-size:14px;color:#374151;line-height:1.5}
+
+  .comments-section textarea{min-height:80px;resize:vertical;margin-top:8px;padding:10px;border-radius:6px;border:1px solid #d1d5db}
+
+  .nav {display:flex;justify-content:space-between;gap:12px;margin-top:18px}
+  .btn{padding:10px 18px;border-radius:8px;border:0;font-weight:700;cursor:pointer}
+  .btn-primary{background:#2563eb;color:white}
+  .btn-primary:hover{background:#1e40af}
+  .btn-secondary{background:#6b7280;color:white}
+  .btn-secondary:hover{background:#4b5563}
+  .btn-submit{background:#10b981;color:white}
+  .btn-submit:hover{background:#059669}
+
+  .summary-box{border:2px solid #2563eb;border-radius:8px;padding:16px;background:linear-gradient(180deg,#fff 0%,#fbfdff 100%);margin-bottom:12px}
+  .summary-box h4{color:#2563eb;margin-bottom:8px}
+  .summary-list{margin-top:8px;padding-left:18px}
+  .footer-note{color:#6b7280;font-size:13px;margin-top:18px;text-align:center}
+  @media (max-width:720px){ .nav{flex-direction:column-reverse} .header h1{font-size:20px} }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Teleperformance India</h1>
+    <h2>BARS Performance Appraisal Form</h2>
+    <p>Customer Care Executive - Behaviorally Anchored Rating Scale</p>
+  </div>
+
+  <!-- PAGE 1 - Employee Info -->
+  <div id="page-1" class="page active">
+    <div class="form-group">
+      <label for="empName">Employee Name</label>
+      <input id="empName" type="text" placeholder="Enter employee name">
+    </div>
+    <div class="form-group">
+      <label for="empId">Employee ID</label>
+      <input id="empId" type="text" placeholder="Enter employee id">
+    </div>
+    <div class="form-group">
+      <label for="reviewPeriod">Review Period</label>
+      <input id="reviewPeriod" type="text" placeholder="e.g., Jan 2025 - Dec 2025">
+    </div>
+    <div class="form-group">
+      <label for="evaluator">Evaluator Name</label>
+      <input id="evaluator" type="text" placeholder="Enter evaluator name">
+    </div>
+
+    <div class="nav">
+      <div></div>
+      <div>
+        <button class="btn btn-primary" onclick="nextPage()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic dimension pages will be injected here -->
+  <div id="dimensions-root"></div>
+
+  <!-- PAGE 10 - Summary -->
+  <div id="page-10" class="page">
+    <div class="summary-box">
+      <h4>Overall Performance Summary</h4>
+      <p><strong>Overall Rating Score:</strong> <span id="overallScore">—</span></p>
+      <p><strong>Performance Level:</strong> <span id="performanceLevel">—</span></p>
+      <p><strong>Areas of Improvement:</strong></p>
+      <ul id="improvementList" class="summary-list"></ul>
+    </div>
+
+    <div class="form-group">
+      <label for="developmentPlan">Development Plan & Recommendations</label>
+      <textarea id="developmentPlan" placeholder="Outline strengths, areas for improvement, recommended training, goals..."></textarea>
+    </div>
+
+    <div class="nav">
+      <div><button class="btn btn-secondary" onclick="prevPage()">← Back</button></div>
+      <div><button class="btn btn-submit" onclick="submitForm()">Submit</button></div>
+    </div>
+  </div>
+
+  <p class="footer-note">Teleperformance India — Confidential performance appraisal</p>
+</div>
+
+<script>
+/* -----------------------
+   Config
+   ----------------------- */
+const scriptURL = 'https://script.google.com/macros/s/AKfycbyhfOjVxClnPUsrpCc9qFgOAbrRCxfmetc40fdomoAeUsjSE_3MqMZV0BUhOdijqz1s_Q/exec';
+
+/* -----------------------
+   Dimensions (full content)
+   ----------------------- */
+const dimensions = [
+  {
+    id: 'communication',
+    title: 'Communication Skills',
+    description: 'Ability to convey information clearly and professionally',
+    scales: [
+      {score:5,label:'Outstanding',behavior:'Consistently demonstrates exceptional communication. Uses positive language, adapts tone perfectly to customer needs, and explains complex information in simple terms. Proactively clarifies doubts and ensures complete understanding.'},
+      {score:4,label:'Exceeds Expectations',behavior:'Regularly communicates effectively with customers. Maintains professional tone, provides clear explanations, and actively listens. Occasionally needs minor clarification prompts.'},
+      {score:3,label:'Meets Expectations',behavior:'Communicates adequately in most situations. Generally clear but sometimes needs to rephrase information. Maintains basic professional standards with occasional lapses.'},
+      {score:2,label:'Needs Improvement',behavior:'Communication often lacks clarity. Struggles to explain solutions clearly, uses inappropriate language occasionally, or fails to listen actively to customer concerns.'},
+      {score:1,label:'Unsatisfactory',behavior:'Poor communication skills. Frequently unclear, uses unprofessional language, interrupts customers, or fails to convey necessary information accurately.'}
+    ]
+  },
+  {
+    id: 'problem_solving',
+    title: 'Problem Resolution',
+    description: 'Effectiveness in identifying issues and providing solutions',
+    scales: [
+      {score:5,label:'Outstanding',behavior:'Expertly diagnoses complex issues on first contact. Provides innovative solutions, anticipates potential problems, and resolves matters efficiently. Consistently achieves FCR (First Call Resolution) targets.'},
+      {score:4,label:'Exceeds Expectations',behavior:'Effectively resolves most customer issues independently. Demonstrates good analytical thinking, follows troubleshooting procedures, and achieves resolution within acceptable timeframes.'},
+      {score:3,label:'Meets Expectations',behavior:'Resolves routine issues adequately but requires supervisor assistance for complex cases. Follows standard procedures but shows limited independent problem-solving initiative.'},
+      {score:2,label:'Needs Improvement',behavior:'Struggles with problem identification. Often provides incomplete solutions, frequently escalates cases that could be resolved independently, or fails to follow proper resolution procedures.'},
+      {score:1,label:'Unsatisfactory',behavior:'Unable to resolve basic customer issues. Provides incorrect information, fails to follow procedures, or creates additional problems through poor judgment.'}
+    ]
+  },
+  {
+    id: 'customer_service',
+    title: 'Customer Service Orientation',
+    description: 'Commitment to meeting customer needs and ensuring satisfaction',
+    scales: [
+      {score:5,label:'Outstanding',behavior:'Goes above and beyond to exceed customer expectations. Demonstrates genuine empathy, takes ownership of issues, and follows up proactively. Consistently receives outstanding customer feedback and CSAT scores above 95%.'},
+      {score:4,label:'Exceeds Expectations',behavior:'Shows strong commitment to customer satisfaction. Displays empathy, maintains patience under pressure, and makes reasonable efforts to ensure positive outcomes. CSAT scores consistently above 85%.'},
+      {score:3,label:'Meets Expectations',behavior:'Provides acceptable customer service. Generally courteous and helpful but lacks proactive engagement. Shows basic empathy and achieves minimum CSAT standards (75-85%).'},
+      {score:2,label:'Needs Improvement',behavior:'Customer service approach is inconsistent. Shows limited empathy, becomes defensive with difficult customers, or fails to make adequate effort to satisfy customer needs. CSAT below 75%.'},
+      {score:1,label:'Unsatisfactory',behavior:'Poor customer service attitude. Displays rudeness, impatience, or indifference to customer concerns. Generates frequent complaints and very low CSAT scores.'}
+    ]
+  },
+  {
+    id: 'product_knowledge',
+    title: 'Product/Process Knowledge',
+    description: 'Understanding of products, services, and company procedures',
+    scales: [
+      {score:5,label:'Outstanding',behavior:'Demonstrates expert-level knowledge of all products, services, and processes. Serves as knowledge resource for team members, quickly adapts to updates, and provides accurate information without reference materials.'},
+      {score:4,label:'Exceeds Expectations',behavior:'Shows comprehensive knowledge of products and processes. Handles most queries confidently with minimal reference to materials. Keeps updated with product changes and new launches.'},
+      {score:3,label:'Meets Expectations',behavior:'Has adequate working knowledge of core products and processes. Regularly refers to knowledge base or documentation. Takes reasonable time to learn new information.'},
+      {score:2,label:'Needs Improvement',behavior:'Limited product knowledge. Frequently provides incorrect information, heavily relies on supervisors for guidance, or fails to stay updated with process changes.'},
+      {score:1,label:'Unsatisfactory',behavior:'Inadequate knowledge of products and procedures. Consistently provides wrong information, shows no initiative to learn, or relies entirely on others for basic information.'}
+    ]
+  },
+  {
+    id: 'productivity',
+    title: 'Productivity & Efficiency',
+    description: 'Call handling metrics and work output quality',
+    scales: [
+      {score:5,label:'Outstanding',behavior:'Consistently exceeds all productivity metrics (AHT, calls per hour, schedule adherence >95%). Manages time exceptionally well, maintains quality while being efficient, and rarely requires breaks beyond scheduled time.'},
+      {score:4,label:'Exceeds Expectations',behavior:'Regularly meets or exceeds productivity targets. Maintains good AHT (Average Handle Time), strong schedule adherence (85-95%), and balances quality with efficiency effectively.'},
+      {score:3,label:'Meets Expectations',behavior:'Meets minimum productivity standards most of the time. AHT within acceptable range, schedule adherence 75-85%, but shows room for improvement in efficiency.'},
+      {score:2,label:'Needs Improvement',behavior:'Frequently falls below productivity targets. Poor time management, excessive AHT, schedule adherence below 75%, or requires frequent unscheduled breaks.'},
+      {score:1,label:'Unsatisfactory',behavior:'Consistently underperforms on productivity metrics. Extremely poor time management, very high AHT, low call volumes, or frequent absenteeism affecting team performance.'}
+    ]
+  },
+  {
+    id: 'compliance',
+    title: 'Compliance & Quality',
+    description: 'Adherence to company policies, scripts, and quality standards',
+    scales: [
+      {score:5,label:'Outstanding',behavior:'Exemplary compliance with all policies, procedures, and quality standards. Consistently scores 95%+ on quality audits, follows scripts appropriately while maintaining natural conversation, and ensures complete documentation.'},
+      {score:4,label:'Exceeds Expectations',behavior:'Strong compliance record. Regular quality scores of 85-95%, follows protocols consistently, maintains accurate records, and demonstrates good understanding of compliance requirements.'},
+      {score:3,label:'Meets Expectations',behavior:'Acceptable compliance levels. Quality scores 75-85%, generally follows procedures but occasional minor deviations, documentation mostly complete with some gaps.'},
+      {score:2,label:'Needs Improvement',behavior:'Frequent compliance issues. Quality scores below 75%, often deviates from scripts, incomplete documentation, or fails to follow security/privacy protocols consistently.'},
+      {score:1,label:'Unsatisfactory',behavior:'Poor compliance record. Regular quality failures, serious policy violations, inadequate documentation, or disregard for compliance requirements creating risk exposure.'}
+    ]
+  },
+  {
+    id: 'teamwork',
+    title: 'Teamwork & Collaboration',
+    description: 'Cooperation with colleagues and contribution to team environment',
+    scales: [
+      {score:5,label:'Outstanding',behavior:'Outstanding team player. Actively mentors new hires, shares best practices, volunteers for team initiatives, and creates positive work environment. Frequently praised by colleagues and supervisors.'},
+      {score:4,label:'Exceeds Expectations',behavior:'Strong collaborator. Willingly assists team members, participates in team activities, shares knowledge when asked, and maintains positive relationships with colleagues.'},
+      {score:3,label:'Meets Expectations',behavior:'Adequate team participation. Cooperates when required, maintains professional relationships, but shows limited initiative in helping others or contributing beyond own responsibilities.'},
+      {score:2,label:'Needs Improvement',behavior:'Limited teamwork. Often works in isolation, reluctant to help colleagues, creates occasional interpersonal conflicts, or fails to participate in team activities.'},
+      {score:1,label:'Unsatisfactory',behavior:'Poor team attitude. Creates conflict, refuses to collaborate, undermines team morale, or displays unprofessional behavior affecting team dynamics.'}
+    ]
+  },
+  {
+    id: 'adaptability',
+    title: 'Adaptability & Learning',
+    description: 'Flexibility and willingness to learn and adapt to changes',
+    scales: [
+      {score:5,label:'Outstanding',behavior:'Exceptionally adaptable. Embraces change enthusiastically, quickly masters new systems/processes, proactively seeks learning opportunities, and helps others adapt to changes.'},
+      {score:4,label:'Exceeds Expectations',behavior:'Highly adaptable. Adjusts well to changes, learns new skills efficiently, maintains performance during transitions, and shows openness to feedback and improvement.'},
+      {score:3,label:'Meets Expectations',behavior:'Moderately adaptable. Eventually adjusts to changes but may require time, learns new things at average pace, and shows some resistance initially but ultimately complies.'},
+      {score:2,label:'Needs Improvement',behavior:'Struggles with change. Resistant to new processes, slow to learn, frequently complains about changes, or shows unwillingness to develop new skills.'},
+      {score:1,label:'Unsatisfactory',behavior:'Highly resistant to change. Refuses to adapt, unable to learn new systems, creates obstacles during transitions, or maintains poor attitude affecting others.'}
+    ]
+  }
+];
+
+/* -----------------------
+   State
+   ----------------------- */
+let ratings = {};           // { dimId: score }
+let currentPage = 1;        // pages 1..10
+const lastPageIndex = dimensions.length + 2; // 1 + 8 + 1 = 10
+
+/* -----------------------
+   Rendering pages
+   ----------------------- */
+function renderDimensionPages(){
+  const root = document.getElementById('dimensions-root');
+  dimensions.forEach((d, idx) => {
+    const pageIdx = idx + 2; // page-2 .. page-9
+    const page = document.createElement('div');
+    page.className = 'page';
+    page.id = `page-${pageIdx}`;
+
+    let html = `<div class="dimension-card">
+      <div class="dimension-header"><h3>${idx+1}. ${d.title}</h3><p>${d.description}</p></div>`;
+
+    d.scales.forEach(s => {
+      const labelClass = getLabelClass(s.label);
+      html += `<div class="rating-option" data-dim="${d.id}" data-score="${s.score}" onclick="onRatingClick(event, '${d.id}', ${s.score})">
+        <input type="radio" name="${d.id}" value="${s.score}">
+        <div class="rating-content">
+          <div class="rating-header">
+            <span class="rating-score">${s.score}</span>
+            <span class="rating-label ${labelClass}">${s.label}</span>
+          </div>
+          <div class="rating-description">${s.behavior}</div>
+        </div>
+      </div>`;
+    });
+
+    html += `</div>
+      <div class="comments-section">
+        <label>Comments & Examples</label>
+        <textarea id="comment-${d.id}" placeholder="Provide specific examples or additional comments..."></textarea>
+      </div>
+      <div class="nav">
+        <div><button class="btn btn-secondary" onclick="prevPage()">← Back</button></div>
+        <div><button class="btn btn-primary" onclick="nextPage()">Next →</button></div>
+      </div>`;
+
+    page.innerHTML = html;
+    root.appendChild(page);
+  });
+}
+
+/* -----------------------
+   Helpers
+   ----------------------- */
+function getLabelClass(label){
+  return {
+    'Outstanding':'label-outstanding',
+    'Exceeds Expectations':'label-exceeds',
+    'Meets Expectations':'label-meets',
+    'Needs Improvement':'label-needs',
+    'Unsatisfactory':'label-unsatisfactory'
+  }[label] || '';
+}
+
+function showPage(n){
+  // clamp
+  if(n < 1) n = 1;
+  if(n > lastPageIndex) n = lastPageIndex;
+
+  // hide all
+  for(let i=1;i<=lastPageIndex;i++){
+    const el = document.getElementById(`page-${i}`);
+    if(el) el.classList.remove('active');
+  }
+  // summary page id is page-10 (lastPageIndex)
+  const target = document.getElementById(`page-${n}`);
+  if(target){
+    target.classList.add('active');
+  } else if(n === lastPageIndex) {
+    // final summary page uses id page-10 which exists
+    const summ = document.getElementById(`page-${n}`);
+    if(summ) summ.classList.add('active');
+  }
+  currentPage = n;
+}
+
+/* -----------------------
+   Navigation
+   ----------------------- */
+function nextPage(){
+  // validations before moving forward
+  if(currentPage === 1){
+    // employee info required: name & id
+    const name = document.getElementById('empName').value.trim();
+    const id = document.getElementById('empId').value.trim();
+    if(!name || !id){
+      alert('Please fill Employee Name and Employee ID before proceeding.');
+      return;
+    }
+  } else if(currentPage >= 2 && currentPage <= dimensions.length + 1){
+    // ensure rating selected for this dimension
+    const dimIdx = currentPage - 2; // 0-based
+    const dim = dimensions[dimIdx];
+    if(dim && !ratings[dim.id]){
+      alert('Please select a rating for "'+dim.title+'" before proceeding.');
+      return;
+    }
+  }
+
+  // move
+  if(currentPage < lastPageIndex) {
+    showPage(currentPage + 1);
+    // if landing on last page compute summary
+    if(currentPage === lastPageIndex) calculateSummary();
+  }
+}
+
+function prevPage(){
+  if(currentPage > 1) showPage(currentPage - 1);
+}
+
+/* -----------------------
+   Rating click (no auto-next)
+   ----------------------- */
+function onRatingClick(evt, dimId, score){
+  // find the rating-option element
+  const option = evt.currentTarget;
+  // mark selected class among siblings
+  const container = option.parentElement;
+  const siblings = container.querySelectorAll('.rating-option');
+  siblings.forEach(s => s.classList.remove('selected'));
+  option.classList.add('selected');
+  // set radio
+  const radio = option.querySelector('input[type="radio"]');
+  if(radio) radio.checked = true;
+  // store
+  ratings[dimId] = score;
+}
+
+/* -----------------------
+   Summary calculation
+   ----------------------- */
+function calculateSummary(){
+  // ensure all dims rated (ideally)
+  let total = 0, count = 0;
+  dimensions.forEach(d => {
+    if(ratings[d.id] !== undefined){
+      total += Number(ratings[d.id]);
+      count++;
+    }
+  });
+  const avg = count ? (total/count) : 0;
+  const avgRounded = avg ? Number(avg.toFixed(2)) : 0;
+  document.getElementById('overallScore').innerText = avgRounded;
+
+  let level = '—';
+  if(avg >= 4.5) level = 'Outstanding';
+  else if(avg >= 3.5) level = 'Exceeds Expectations';
+  else if(avg >= 2.5) level = 'Meets Expectations';
+  else if(avg >= 1.5) level = 'Needs Improvement';
+  else level = 'Unsatisfactory';
+  document.getElementById('performanceLevel').innerText = level;
+
+  // areas of improvement = dims scored <= 3
+  const ul = document.getElementById('improvementList');
+  ul.innerHTML = '';
+  dimensions.forEach(d => {
+    const s = ratings[d.id];
+    if(s !== undefined && Number(s) <= 3){
+      const li = document.createElement('li');
+      li.innerText = d.title + ' — score: ' + s;
+      ul.appendChild(li);
+    }
+  });
+}
+
+/* -----------------------
+   Submit to Google Apps Script
+   ----------------------- */
+function submitForm(){
+  // re-calc summary to be safe
+  calculateSummary();
+
+  // collect data
+  const payload = {
+    timestamp: new Date().toISOString(),
+    empName: document.getElementById('empName').value.trim(),
+    empId: document.getElementById('empId').value.trim(),
+    reviewPeriod: document.getElementById('reviewPeriod').value.trim(),
+    evaluator: document.getElementById('evaluator').value.trim(),
+    ratings: ratings,
+    comments: {},
+    overallScore: document.getElementById('overallScore').innerText,
+    performanceLevel: document.getElementById('performanceLevel').innerText,
+    improvementAreas: Array.from(document.getElementById('improvementList').children).map(li=>li.innerText),
+    developmentPlan: document.getElementById('developmentPlan').value.trim()
+  };
+
+  dimensions.forEach(d => {
+    const c = document.getElementById('comment-' + d.id);
+    payload.comments[d.id] = c ? c.value.trim() : '';
+  });
+
+  // send to Google Apps Script
+  // using no-cors mode so browsers won't block cross-origin if script is not CORS-enabled.
+  // Apps Script should accept POST and append to sheet.
+  fetch(scriptURL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  }).then(() => {
+    alert('Appraisal submitted successfully.');
+    // optional: reset or redirect
+    window.location.reload();
+  }).catch(err => {
+    console.error(err);
+    alert('Submission failed — check console for details.');
+  });
+}
+
+/* -----------------------
+   Init
+   ----------------------- */
+(function init(){
+  renderDimensionPages();
+  showPage(1);
+})();
+</script>
+</body>
+</html>
